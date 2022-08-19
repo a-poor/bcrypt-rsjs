@@ -18,4 +18,4 @@ bcrypt = "0.13"
 [dependencies.neon]
 version = "0.10"
 default-features = false
-features = ["napi-6"]
+features = ["napi-6", "promise-api", "task-api"]
