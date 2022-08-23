@@ -1,5 +1,5 @@
 {
-  "name": "bcrypt-rsjs",
+  "name": "@a-poor/bcrypt-rsjs",
   "version": "0.1.0",
   "description": "A bcrypt library for Node.js, written in Rust.",
   "main": "index.node",
