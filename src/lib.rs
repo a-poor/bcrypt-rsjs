@@ -125,9 +125,25 @@ fn js_async_compare(mut cx: FunctionContext) -> JsResult<JsPromise> {
 
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
-    cx.export_function("hash", js_sync_hash)?;
-    cx.export_function("compare", js_sync_compare)?;
-    cx.export_function("async_hash", js_async_hash)?;
-    cx.export_function("async_compare", js_async_compare)?;
+    // Export consts
+    let min_cost = MIN_COST;
+    let min_cost = cx.number(min_cost);
+    cx.export_value("MIN_COST", min_cost)?;
+
+    let max_cost = MAX_COST;
+    let max_cost = cx.number(max_cost);
+    cx.export_value("MAX_COST", max_cost)?;
+
+    let default_cost = DEFAULT_COST;
+    let default_cost = cx.number(default_cost);
+    cx.export_value("DEFAULT_COST", default_cost)?;
+
+    // Export functions
+    cx.export_function("hashSync", js_sync_hash)?;
+    cx.export_function("compareSync", js_sync_compare)?;
+    cx.export_function("hash", js_async_hash)?;
+    cx.export_function("compare", js_async_compare)?;
+    
+    // Good!
     Ok(())
 }

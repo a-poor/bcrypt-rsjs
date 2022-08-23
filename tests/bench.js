@@ -1,51 +1,155 @@
 const { performance } = require("node:perf_hooks");
 
-// This library...
-const bcrypt_rsjs = require("..");
-
-// The competition...
+const bcryptrsjs = require(".."); // This library - uses Rust
 const bcrypt = require("bcrypt"); // Uses C
 const bcryptjs = require("bcryptjs"); // Pure node
 
-const hash_tests = {
-  password: "MyPassw0rd?",
-  cases: [
-    {n: 1_000_000, r: 6},
-    {n: 1_000, r: 12},
-    {n: 10, r: 15},
-  ],
-};
 
-console.log(`Testing hash functions...`);
-for (let {n, r} of hash_tests.cases) {
-  // bcrypt-rsjs -> hash
-  let start = performance.now();
+const password = "MyPassw0rd?";
+const rounds = [
+  { c: 8, n: 1_000 },
+  { c: 12, n: 100 },
+  { c: 16, n: 10 },
+];
+
+
+const roundTo = (n, p) => Math.round(n * Math.pow(10, p)) / Math.pow(10, p);
+
+function testHashSync(impl, cost, n) {
+  const start = performance.now();
   for (let i = 0; i < n; i++) {
-    bcrypt_rsjs.hash(hash_tests.password, r);
+    _ = impl.hashSync(password, cost);
   }
-  let end = performance.now();
-  let diff = end - start;
-  let per = diff / n;
-  console.log(`| bcrypt-rsjs | hash | ${n} | ${r} | ${per} ms/hash |`)
-
-  // bcrypt -> hash
-  start = performance.now();
-  for (let i = 0; i < n; i++) {
-    bcrypt.hashSync(hash_tests.password, r);
-  }
-  end = performance.now();
-  diff = end - start;
-  per = diff / n;
-  console.log(`| bcrypt | hash | ${n} | ${r} | ${per} ms/hash |`)
-
-  // bcrypt-js -> hash
-  start = performance.now();
-  for (let i = 0; i < hash_tests.n; i++) {
-    bcryptjs.hashSync(hash_tests.password, r);
-  }
-  end = performance.now();
-  diff = end - start;
-  per = diff / n;
-  console.log(`| bcryptjs | hash | ${n} | ${r} | ${per} ms/hash |`)
+  const end = performance.now();
+  return end - start;
 }
 
+async function testHashAsync(impl, cost, n) {
+  const start = performance.now();
+  const ps = [];
+  for (let i = 0; i < n; i++) {
+    ps.push(impl.hash(password, cost));
+  }
+  await Promise.all(ps);
+  const end = performance.now();
+  return end - start;
+}
+
+
+function runSyncHashTest() {
+  console.log("Starting sync tests");
+
+  // Store the results
+  const res = [];
+
+  // Test bcrypt/sync
+  let t;
+  for (let r of rounds) {
+    console.log(`> lib=bcrypt       sync=true n=${r.n} cost=${r.c}`);
+    t = testHashSync(bcrypt, r.c, r.n);
+    res.push({
+      name: "bcrypt",
+      sync: true,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+
+    // Test bcrypt-js/sync
+    console.log(`> lib=bcrypt-js    sync=true n=${r.n} cost=${r.c}`);
+    t = testHashSync(bcryptjs, r.c, r.n);
+    res.push({
+      name: "bcryptjs",
+      sync: true,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+
+    // Test bcrypt-rs-js/sync
+    console.log(`> lib=bcrypt-rs-js sync=true n=${r.n} cost=${r.c}`);
+    t = testHashSync(bcryptrsjs, r.c, r.n);
+    res.push({
+      name: "bcrypt-rsjs",
+      sync: true,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+  }
+
+  // Print the results
+  console.log('| name | cost | n tests | time (ms) | time/hash (ms) |');
+  console.log('| ---- | ----:| -------:| ---------:| --------------:|');
+  for (let r of res) {
+    console.log(`| ${r.name} | ${r.cost} | ${r.n} | ${roundTo(r.time, 2)} | ${roundTo(r.timePer, 2)} |`);
+  }
+  console.log();
+  console.log("Sync tests complete.");
+}
+
+async function runAsyncHashTest() {
+  console.log("Running async tests...");
+
+  // Store the results
+  const res = [];
+
+  // Test bcrypt/async
+  let t;
+  for (let r of rounds) {
+    console.log(`> lib=bcrypt       sync=false n=${r.n} cost=${r.c}`);
+    t = await testHashAsync(bcrypt, r.c, r.n);
+    res.push({
+      name: "bcrypt",
+      sync: false,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+
+    // Test bcrypt-js/sync
+    console.log(`> lib=bcrypt-js    sync=false n=${r.n} cost=${r.c}`);
+    t = await testHashAsync(bcryptjs, r.c, r.n);
+    res.push({
+      name: "bcryptjs",
+      sync: false,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+
+    // Test bcrypt-rs-js/sync
+    console.log(`> lib=bcrypt-rs-js sync=false n=${r.n} cost=${r.c}`);
+    t = await testHashAsync(bcryptrsjs, r.c, r.n);
+    res.push({
+      name: "bcrypt-rsjs",
+      sync: false,
+      cost: r.c,
+      n: r.n,
+      time: t,
+      timePer: t / r.n,
+    });
+  }
+
+  // Print the results
+  console.log();
+  console.log('| name | cost | n tests | time (ms) | time/hash (ms) |');
+  console.log('| ---- | ----:| -------:| ---------:| --------------:|');
+  for (let r of res) {
+    console.log(`| ${r.name} | ${r.cost} | ${r.n} | ${roundTo(r.time, 2)} | ${roundTo(r.timePer, 2)} |`);
+  }
+  console.log();
+  console.log("Async tests complete.");
+}
+
+
+async function main() {
+  await runAsyncHashTest();
+  runSyncHashTest();
+}
+main();
