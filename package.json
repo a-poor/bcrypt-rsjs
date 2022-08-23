@@ -8,11 +8,14 @@
     "build-debug": "npm run build --",
     "build-release": "npm run build -- --release",
     "install": "npm run build-release",
-    "test": "cargo test"
+    "test": "cargo test",
+    "bench": "node scripts/bench.js"
   },
   "author": "Austin Poor",
   "license": "MIT",
   "devDependencies": {
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "cargo-cp-artifact": "^0.1"
   },
   "repository": {
