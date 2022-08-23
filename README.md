@@ -2,7 +2,7 @@
 
 _created by Austin Poor_
 
-A [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) library for Node.js, written in Rust and [Neon](https://neon-bindings.com/) -- designed to replace [node-bcrypt-js](https://www.npmjs.com/package/bcrypt), which uses C.
+A [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) library for Node.js, written in Rust and [Neon](https://neon-bindings.com/) -- designed to replace [bcrypt](https://www.npmjs.com/package/bcrypt), which uses C++.
 
 ## Example
 
@@ -32,7 +32,9 @@ bcrypt.compare(not_my_password, hash);
 
 ## Benchmarks
 
-Benchmarks were run for this library (`bcrypt-rsjs`)
+Benchmarks were run for `bcrypt-rsjs` (this library), [bcrypt](https://www.npmjs.com/package/bcrypt) (uses C++), and [bcryptjs](https://www.npmjs.com/package/bcryptjs) (which is pure js).
+
+Based on the results below, `bcrypt-rsjs` has comparable performance to the C++ library. Tests can be rerun via `npm run bench`.
 
 ### Sync Hash Benchmark
 
