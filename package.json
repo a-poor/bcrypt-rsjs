@@ -4,6 +4,7 @@
   "description": "A bcrypt library for Node.js, written in Rust.",
   "main": "index.node",
   "types": "bcrypt-rsjs.d.ts",
+  "private": false,
   "scripts": {
     "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
     "build-debug": "npm run build --",
@@ -36,5 +37,5 @@
   "bugs": {
     "url": "https://github.com/a-poor/bcrypt-rsjs/issues"
   },
-  "homepage": "https://github.com/a-poor/bcrypt-rsjs#readme"
+  "homepage": "https://github.com/a-poor/bcrypt-rsjs"
 }
